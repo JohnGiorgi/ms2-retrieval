@@ -48,8 +48,8 @@ def create_examples(input_dir: Path, output_dir: Path) -> None:
                 for line in f:
                     parsed = json.loads(line)
                     # This is a bit of a hack, but we can create queries by retaining the first sentence
-                    # of titles that end with a question mark or start with any of several question words
-                    doc = nlp(parsed["title"])
+                    # of titles that end with a question mark and start with any of several question words
+                    doc = nlp(parsed["title"], disable="ner")
                     query = next(doc.sents).text
                     # spaCy has trouble with the proceeding ":"'s which are common.
                     query = query.rstrip(":")
