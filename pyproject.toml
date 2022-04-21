@@ -1,0 +1,51 @@
+[tool.poetry]
+name = "ms2-retrieval"
+version = "0.1.0"
+description = "A set of preliminary retrieval experiments on the MS2 dataset."
+authors = ["John Giorgi <johnmgiorgi@gmail.com>"]
+include = ["scripts/encode.sh"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+spacy = "^3.2.4"
+en-core-web-sm = {url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.2.0/en_core_web_sm-3.2.0.tar.gz"}
+pyserini = "^0.16.0"
+torch = "^1.11.0"
+faiss-cpu = "^1.7.2"
+typer = "^0.4.1"
+wasabi = "^0.9.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+ipykernel = "^6.13.0"
+black = "^22.3.0"
+flake8 = "^4.0.1"
+mypy = "^0.942"
+
+[tool.poetry.scripts]
+ms2-retrieval = "ms2_retrieval.main:app"
+
+# This configuration is borrowed from: https://github.com/allenai/allennlp/blob/main/pyproject.toml
+[tool.black]
+line-length = 100
+
+include = '\.pyi?$'
+
+exclude = '''
+(
+      __pycache__
+    | \btutorials\b
+    | \bbuild\b
+    | \.git
+    | \.mypy_cache
+    | \.pytest_cache
+    | \.vscode
+    | \.venv
+    | \bdist\b
+    | \bdoc\b
+)
+'''
+
+[build-system]
+requires = ["poetry"]
+build-backend = "poetry.masonry.api"
