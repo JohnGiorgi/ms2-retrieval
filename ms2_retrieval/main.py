@@ -47,13 +47,34 @@ def create_examples(input_dir: Path, output_dir: Path) -> None:
             with open(split_fp, "r") as f:
                 for line in f:
                     parsed = json.loads(line)
+                    doc = nlp(parsed["title"], disable="ner")
+
+                    # Construct the example
+                    example = {
+                        "pmid": parsed["pmid"],
+                        "included_studies": [],
+                    }
+
+                    # Add the neccessary information about the included studies
+                    for study in parsed["included_studies"]:
+                        example["included_studies"].append({"pmid": study["pmid"]})
+                        # These are sometimes None, so handle that here.
+                        title = study["references"][0]["title"] or ""
+                        abstract = study["references"][0]["abstract"] or ""
+                        # Add the included study to the index
+                        to_index.append(
+                            {
+                                "id": study["pmid"],
+                                # Need to use some basic cleaning on this text or pyserini will fail.
+                                "contents": _sanitize_text(title) + " " + _sanitize_text(abstract),
+                            }
+                        )
+
                     # This is a bit of a hack, but we can create queries by retaining the first sentence
                     # of titles that end with a question mark and start with any of several question words
-                    doc = nlp(parsed["title"], disable="ner")
                     query = next(doc.sents).text
                     # spaCy has trouble with the proceeding ":"'s which are common.
                     query = query.rstrip(":")
-
                     if (
                         any(re.match(rf"{word}\b", parsed["title"]) for word in _QUESTION_WORDS)
                         # The minimum length check prevents us from creating really sparse queries,
@@ -62,32 +83,9 @@ def create_examples(input_dir: Path, output_dir: Path) -> None:
                         # A sanity check that this is actually a question
                         and query.endswith("?")
                     ):
-
-                        # Construct the example
-                        example = {
-                            "query": query,
-                            "pmid": parsed["pmid"],
-                            "included_studies": [],
-                        }
-
-                        # Add the neccessary information about the included studies
-                        for study in parsed["included_studies"]:
-                            example["included_studies"].append({"pmid": study["pmid"]})
-                            # These are sometimes None, so handle that here.
-                            title = study["references"][0]["title"] or ""
-                            abstract = study["references"][0]["abstract"] or ""
-                            # Add the included study to the index
-                            to_index.append(
-                                {
-                                    "id": study["pmid"],
-                                    # Need to use some basic cleaning on this text or pyserini will fail.
-                                    "contents": _sanitize_text(title)
-                                    + " "
-                                    + _sanitize_text(abstract),
-                                }
-                            )
-
+                        example["query"] = query
                         examples.append(example)
+
         msg.good(f"Created {len(examples)} examples with an index size of {len(to_index)}.")
 
     output_dir = Path(output_dir)
@@ -102,17 +100,18 @@ def create_examples(input_dir: Path, output_dir: Path) -> None:
 
 
 @app.command()
-def create_index(input_fp: Path, output_dir: Path) -> None:
+def create_index(input_fp: Path, output_dir: Path, device: str = "cpu") -> None:
     """Create the dense vector index.
 
     input_fp: Path to the file containing the preprocessed examples.
     output_dir: Path to the directory where the index should be saved.
+    device: The device to use for embedding. Should be "cpu" or "cuda:0, cuda:1...".
     """
     msg.divider("Create Index")
 
     script_fp = Path(__file__).parent.parent.resolve() / "scripts" / "encode.sh"
     output_dir = Path(output_dir) / "index"
-    subprocess.check_call(f"bash {script_fp} {input_fp} {output_dir}", shell=True)
+    subprocess.check_call(f"bash {script_fp} {input_fp} {output_dir} {device}", shell=True)
     msg.good(f"Local FAISS index saved to {output_dir}.")
 
 

@@ -2,6 +2,7 @@
 
 INPUT_FP="$1"
 OUTPUT_DIR="$2"
+DEVICE="$3"
 
 # See: https://github.com/castorini/pyserini#dense-indexes
 python -m pyserini.encode \
@@ -15,4 +16,4 @@ python -m pyserini.encode \
   encoder --encoder castorini/tct_colbert-v2-hnp-msmarco \
           --fields text \
           --batch 32 \
-          --device "cpu"
+          --device "$DEVICE"
