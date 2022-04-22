@@ -2,7 +2,8 @@
 
 INPUT_FP="$1"
 OUTPUT_DIR="$2"
-DEVICE="$3"
+BATCH_SIZE="$3"
+DEVICE="$4"
 
 # See: https://github.com/castorini/pyserini#dense-indexes
 python -m pyserini.encode \
@@ -15,5 +16,5 @@ python -m pyserini.encode \
           --to-faiss \
   encoder --encoder castorini/tct_colbert-v2-hnp-msmarco \
           --fields text \
-          --batch 32 \
+          --batch "$BATCH_SIZE" \
           --device "$DEVICE"

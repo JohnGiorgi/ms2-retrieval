@@ -100,7 +100,7 @@ def create_examples(input_dir: Path, output_dir: Path) -> None:
 
 
 @app.command()
-def create_index(input_fp: Path, output_dir: Path, device: str = "cpu") -> None:
+def create_index(input_fp: Path, output_dir: Path, batch_size: int 16, device: str = "cpu") -> None:
     """Create the dense vector index.
 
     input_fp: Path to the file containing the preprocessed examples.
@@ -111,7 +111,7 @@ def create_index(input_fp: Path, output_dir: Path, device: str = "cpu") -> None:
 
     script_fp = Path(__file__).parent.parent.resolve() / "scripts" / "encode.sh"
     output_dir = Path(output_dir) / "index"
-    subprocess.check_call(f"bash {script_fp} {input_fp} {output_dir} {device}", shell=True)
+    subprocess.check_call(f"bash {script_fp} {input_fp} {output_dir} {batch_size} {device}", shell=True)
     msg.good(f"Local FAISS index saved to {output_dir}.")
 
 
