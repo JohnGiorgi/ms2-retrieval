@@ -100,7 +100,7 @@ def create_examples(input_dir: Path, output_dir: Path) -> None:
 
 
 @app.command()
-def create_index(input_fp: Path, output_dir: Path, batch_size: int 16, device: str = "cpu") -> None:
+def create_index(input_fp: Path, output_dir: Path, batch_size: int = 16, device: str = "cpu") -> None:
     """Create the dense vector index.
 
     input_fp: Path to the file containing the preprocessed examples.
